@@ -1,0 +1,26 @@
+# 只推 VCMounter 工具本身, 排除 VeraCrypt 官方发行文件和本地杂项
+
+# VeraCrypt 官方程序/驱动/文档 (不属于本工具)
+*.exe
+!VCMounter.exe
+*.sys
+*.cat
+*.inf
+docs/
+Languages/
+Configuration.xml
+LICENSE
+License.txt
+NOTICE
+start.bat
+
+# 本地备份/临时
+*.bak
+*.ini
+VCMounter_new.exe
+
+# git 自身
+.git/
+.workbuddy/
+.mcp-ssh.lock
+VCMounter_README.md
