@@ -2,13 +2,20 @@
 
 面向电子取证场景的 VeraCrypt 容器挂载工具（Windows Forms，单文件 C# 实现）。
 
-## 解决的问题
+## 为什么做这个工具
 
-取证人员经常需要把检材里的 VeraCrypt 容器（`.hc` / `.vc`，或 dd/E01/raw 等镜像内的隐藏容器）挂载为只读盘符查看。VeraCrypt 原生界面流程繁琐，且文件选择框默认过滤扩展名，导致无后缀/特殊后缀的检材"看不到"。VCMounter 做了这些优化：
+**直接起因：VeraCrypt 原生图形界面在某些取证环境机上点击就闪退**（双击 VeraCrypt.exe 窗口一闪就没，无法正常挂载卷）。排查发现绕开原生 GUI、直接调用 VeraCrypt 的命令行模式可以稳定工作，于是做了这个壳工具——
 
-- **文件对话框默认"所有文件"**——任何扩展名的检材直接可见、直接选中，不用再手动切换过滤器
+**用命令行内核替代会闪退的图形界面**：VCMounter 负责界面交互，挂载/卸载动作全部通过 `VeraCrypt-x64.exe /v <容器> /l <盘符> /a /q` 这类命令行参数交给 VeraCrypt 后台完成，彻底绕开出问题的原生 GUI。
+
+在解决闪退问题的同时，也顺手补齐了取证场景的易用性短板。
+
+## 功能特点
+
+- **绕过 VeraCrypt 原生 GUI 闪退问题**——命令行内核稳定挂载，不再依赖原生界面
+- **文件对话框默认"所有文件"**——任何扩展名的检材（dd/E01/raw/无后缀镜像）直接可见、直接选中，不用再手动切换过滤器
 - **记住上次浏览目录和检材文件**——下次启动自动带入，重复工作归零
-- **一键只读挂载/强制卸载**——底层调用本机 VeraCrypt 命令行（`/v /l /a /q /m ro`），不改动卷数据
+- **一键只读挂载/强制卸载**——底层调用 VeraCrypt 命令行（`/v /l /a /q /m ro`），不改动卷数据
 - **自动定位 VeraCrypt**——同目录 → 子目录 → 注册表 → 常见安装路径，找不到可手动指定并记住
 - **盘符状态实时显示**——已挂载/空闲一目了然，支持刷新
 
@@ -49,7 +56,6 @@ csc /nologo /target:winexe /platform:anycpu /out:VCMounter.exe /win32manifest:ap
 |---|---|
 | `VCMounter.cs` | 全部源码（单文件） |
 | `app.manifest` | 应用清单（管理员权限声明） |
-| `build_vcmounter.sh` | 一键构建脚本（dotnet Roslyn） |
 | `VCMounter.exe` | 已编译的可执行文件 |
 
 运行时会在 exe 同目录生成 `VCMounter.ini` 保存配置（VC 路径、上次浏览目录、上次检材），不会写注册表。
@@ -59,6 +65,7 @@ csc /nologo /target:winexe /platform:anycpu /out:VCMounter.exe /win32manifest:ap
 - 仅支持 VeraCrypt 加密卷的挂载/卸载；物理磁盘类检材 VeraCrypt 会拒绝操作，数据不受影响
 - 取证操作务必勾选「只读挂载」
 - 本工具不实现加密/解密，所有加解密由 VeraCrypt 完成
+- 若挂载失败提示 ExitCode 非零，多为密码错误或盘符占用；VeraCrypt 命令行本身报错时会静默返回非零码
 
 ## License
 
